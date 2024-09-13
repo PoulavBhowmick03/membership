@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import ConnectWallet from "./ConnectWallet";
-import useWallet from "@/hooks/useWallet";
+import useWallet from "../hooks/useWallet";
 
 export default function MembershipPurchase({ contract }) {
   const [membershipFee, setMembershipFee] = useState("0");

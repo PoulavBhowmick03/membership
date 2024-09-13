@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
-import useWallet from '@/hooks/useWallet';
-import useContract from '@/hooks/useContract';
+import useWallet from '../../hooks/useWallet';
+import useContract from '../../hooks/useContract';
 import UpdateProfile from '@/components/UpdateProfile';
 import Loading from '@/components/Loading';
 import Error from '@/components/Error';

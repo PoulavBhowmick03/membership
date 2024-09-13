@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import useWallet from '@/hooks/useWallet';
-import useContract from '@/hooks/useContract';
+import useWallet from '../../hooks/useWallet';
+import useContract from '../../hooks/useContract';
 import ConnectWallet from '@/components/ConnectWallet';
 import AdminPanel from '@/components/AdminPanel';
 import MembershipsTable from '@/components/MembershipsTable';
