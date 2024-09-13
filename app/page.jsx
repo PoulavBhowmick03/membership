@@ -3,8 +3,8 @@
 
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
-import useWallet from "../hooks/useWallet";
-import useContract from "../hooks/UseContract";
+import useWallet from '@/hooks/useWallet';
+import useContract from '@/hooks/useContract';
 import { motion } from "framer-motion";
 import {
   LockClosedIcon,
