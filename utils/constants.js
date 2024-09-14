@@ -1,5 +1,5 @@
 export const ClubMembership = {
-  address: "0x4c96f0a358f4eb7f1aab7e32ae724a0aaf0dc9cd",
+  address: "0xF05730D64b6EC473276C57885fd41832c968D5fc",
   abi: [
     {
       inputs: [
