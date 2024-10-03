@@ -1,22 +1,50 @@
+'use client'
 import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function AdminPanel({ contract }) {
-  const [newFee, setNewFee] = useState('');
+  const [newFees, setNewFees] = useState({
+    Basic: '',
+    Silver: '',
+    Gold: '',
+    Platinum: ''
+  });
+  const [newDuration, setNewDuration] = useState('');
   const [memberToRevoke, setMemberToRevoke] = useState('');
-  const [currentFee, setCurrentFee] = useState('');
+  const [currentFees, setCurrentFees] = useState({
+    Basic: '',
+    Silver: '',
+    Gold: '',
+    Platinum: ''
+  });
   const [contractBalance, setContractBalance] = useState('');
+  const [selectedTier, setSelectedTier] = useState('Basic');
+
+  const tierEnumValues = {
+    'Basic': 0,
+    'Silver': 1,
+    'Gold': 2,
+    'Platinum': 3,
+  };
 
   useEffect(() => {
     const fetchContractInfo = async () => {
       if (contract) {
         try {
-          const fee = await contract.membershipFee();
-          setCurrentFee(ethers.utils.formatEther(fee));
+          const tiers = ['Basic', 'Silver', 'Gold', 'Platinum'];
+          const fees = await Promise.all(tiers.map(tier => 
+            contract.tierFees(tierEnumValues[tier])
+          ));
+          const feesObj = {};
+          tiers.forEach((tier, index) => {
+            feesObj[tier] = ethers.utils.formatEther(fees[index].fee);
+          });
+          setCurrentFees(feesObj);
 
           const balance = await contract.provider.getBalance(contract.address);
           setContractBalance(ethers.utils.formatEther(balance));
@@ -30,13 +58,18 @@ export default function AdminPanel({ contract }) {
   }, [contract]);
 
   const changeMembershipFee = async () => {
-    if (contract && newFee) {
+    if (contract && newFees[selectedTier] && newDuration) {
       try {
-        const tx = await contract.changeMembershipFee(ethers.utils.parseEther(newFee));
+        const tx = await contract.changeMembershipFee(
+          tierEnumValues[selectedTier],
+          ethers.utils.parseEther(newFees[selectedTier]),
+          ethers.BigNumber.from(newDuration)
+        );
         await tx.wait();
         alert('Membership fee changed successfully!');
-        setCurrentFee(newFee);
-        setNewFee('');
+        setCurrentFees(prev => ({ ...prev, [selectedTier]: newFees[selectedTier] }));
+        setNewFees(prev => ({ ...prev, [selectedTier]: '' }));
+        setNewDuration('');
       } catch (error) {
         console.error('Error changing membership fee:', error);
         alert('Failed to change membership fee. Please try again.');
@@ -79,7 +112,9 @@ export default function AdminPanel({ contract }) {
           <CardTitle>Contract Information</CardTitle>
         </CardHeader>
         <CardContent>
-          <p>Current Membership Fee: {currentFee} ETH</p>
+          {Object.entries(currentFees).map(([tier, fee]) => (
+            <p key={tier}>{tier} Membership Fee: {fee} ETH</p>
+          ))}
           <p>Contract Balance: {contractBalance} ETH</p>
         </CardContent>
       </Card>
@@ -91,12 +126,35 @@ export default function AdminPanel({ contract }) {
         <CardContent>
           <div className="grid w-full items-center gap-4">
             <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="tier">Membership Tier</Label>
+              <Select onValueChange={setSelectedTier} value={selectedTier}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select tier" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Basic">Basic</SelectItem>
+                  <SelectItem value="Silver">Silver</SelectItem>
+                  <SelectItem value="Gold">Gold</SelectItem>
+                  <SelectItem value="Platinum">Platinum</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col space-y-1.5">
               <Label htmlFor="newFee">New Fee (in ETH)</Label>
               <Input
                 id="newFee"
-                value={newFee}
-                onChange={(e) => setNewFee(e.target.value)}
+                value={newFees[selectedTier]}
+                onChange={(e) => setNewFees(prev => ({ ...prev, [selectedTier]: e.target.value }))}
                 placeholder="Enter new fee"
+              />
+            </div>
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="newDuration">New Duration (in days)</Label>
+              <Input
+                id="newDuration"
+                value={newDuration}
+                onChange={(e) => setNewDuration(e.target.value)}
+                placeholder="Enter new duration"
               />
             </div>
           </div>

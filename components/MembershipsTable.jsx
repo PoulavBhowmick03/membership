@@ -22,12 +22,16 @@ export default function MembershipsTable({ contract }) {
       if (contract) {
         try {
           setLoading(true);
-          // This is a placeholder. You'll need to implement a way to fetch all members.
-          // This might require adding a function to your smart contract to return all member addresses.
           const memberAddresses = await contract.getAllMembers();
           const membersData = await Promise.all(memberAddresses.map(async (address) => {
-            const purchaseTime = await contract.membershipPurchaseTime(address);
-            return { address, purchaseTime: new Date(purchaseTime.toNumber() * 1000) };
+            const member = await contract.members(address);
+            return {
+              address,
+              name: member.name,
+              email: member.email,
+              tier: ['Basic', 'Silver', 'Gold', 'Platinum'][member.tier],
+              expiryDate: new Date(member.expiry_date.toNumber() * 1000)
+            };
           }));
           setMembers(membersData);
         } catch (error) {
@@ -41,9 +45,27 @@ export default function MembershipsTable({ contract }) {
     fetchMembers();
   }, [contract]);
 
-  const filteredMembers = members.filter(member => 
-    member.address.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredMembers = members.filter(member =>
+    member.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    member.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const revokeMembership = async (address) => {
+    if (contract) {
+      try {
+        const tx = await contract.revokeMembership(address);
+        await tx.wait();
+        alert('Membership revoked successfully!');
+        // Refresh the member list
+        const updatedMembers = members.filter(member => member.address !== address);
+        setMembers(updatedMembers);
+      } catch (error) {
+        console.error('Error revoking membership:', error);
+        alert('Failed to revoke membership. Please try again.');
+      }
+    }
+  };
 
   if (loading) {
     return (
@@ -57,7 +79,7 @@ export default function MembershipsTable({ contract }) {
     <div>
       <div className="mb-4">
         <Input
-          placeholder="Search by address"
+          placeholder="Search by address, name, or email"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -67,7 +89,10 @@ export default function MembershipsTable({ contract }) {
         <TableHeader>
           <TableRow>
             <TableHead>Address</TableHead>
-            <TableHead>Membership Purchase Date</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Tier</TableHead>
+            <TableHead>Expiry Date</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -75,7 +100,10 @@ export default function MembershipsTable({ contract }) {
           {filteredMembers.map((member) => (
             <TableRow key={member.address}>
               <TableCell>{member.address}</TableCell>
-              <TableCell>{member.purchaseTime.toLocaleString()}</TableCell>
+              <TableCell>{member.name}</TableCell>
+              <TableCell>{member.email}</TableCell>
+              <TableCell>{member.tier}</TableCell>
+              <TableCell>{member.expiryDate.toLocaleString()}</TableCell>
               <TableCell>
                 <Button variant="destructive" size="sm" onClick={() => revokeMembership(member.address)}>
                   Revoke

@@ -10,7 +10,7 @@ import ConnectWallet from '@/components/ConnectWallet';
 export default function MembersPage() {
   const { account, connect, disconnect, switchWallet } = useWallet();
   const contract = useContract();
-  const [isMember, setIsMember] = useState(false);
+  const [isActiveMember, setisActiveMember] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -19,8 +19,8 @@ export default function MembersPage() {
       if (account && contract) {
         try {
           setLoading(true);
-          const memberStatus = await contract.isMember(account);
-          setIsMember(memberStatus);
+          const memberStatus = await contract.isActiveMember(account);
+          setisActiveMember(memberStatus);
         } catch (err) {
           console.error('Error checking membership:', err);
           setError('Failed to check membership status. Please try again.');
@@ -39,7 +39,7 @@ export default function MembersPage() {
   if (!account) {
     return <div>Please connect your wallet to access this page.</div>;
   }
-  if (!isMember) {
+  if (!isActiveMember) {
     return <div>This page is only accessible to club members.
             <ConnectWallet
         account={account}
@@ -61,7 +61,6 @@ export default function MembersPage() {
         disconnect={disconnect}
         switchWallet={switchWallet}
       />
-      {/* Add more member-only content here */}
     </div>
   );
 }
