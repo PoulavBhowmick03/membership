@@ -79,7 +79,6 @@ export default function MembershipApp() {
         checkMembership();
       } catch (error) {
         console.error("Error purchasing membership:", error);
-        alert("Failed to purchase membership. Please try again.");
       }
     }
   };
@@ -97,7 +96,6 @@ export default function MembershipApp() {
         checkMembership();
       } catch (error) {
         console.error("Error upgrading membership:", error);
-        alert("Failed to upgrade membership. Please try again.");
       }
     }
   };
@@ -114,7 +112,6 @@ export default function MembershipApp() {
         checkMembership();
       } catch (error) {
         console.error("Error renewing membership:", error);
-        alert("Failed to renew membership. Please try again.");
       }
     }
   };
@@ -128,7 +125,6 @@ export default function MembershipApp() {
         checkMembership();
       } catch (error) {
         console.error("Error updating details:", error);
-        alert("Failed to update details. Please try again.");
       }
     }
   };
